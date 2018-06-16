@@ -1,4 +1,4 @@
 sceneSetups:
-- path: Assets/Scenes/Snowy.unity
+- path: Assets/Scenes/Sunny.unity
   isLoaded: 1
   isActive: 1
