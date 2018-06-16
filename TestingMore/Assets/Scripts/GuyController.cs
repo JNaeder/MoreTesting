@@ -4,23 +4,38 @@ using UnityEngine;
 
 public class GuyController : MonoBehaviour {
 
-    public float speed, jumpStrength, fallMult, upMult, dashSpeed, dashLength;
+
+
+	[Header("Movement Settings")]
+	public float speed;
+	public float jumpStrength;
+	public float fallMult;
+	public float upMult;
+	public float dashSpeed;
+	public float dashLength;
+	public float dashWaitTime;
     public int maxJumpNum;
+
 
     SpriteRenderer sP;
     Rigidbody2D rB;
 
     int jumpNum;
-    bool facingLeft, isDashing;
+    bool facingLeft, isDashing, isDashable;
+	float dashStartTime;
 
 
-    Vector3 newDashPos, transPos;
+    Vector3 newDashPos, transPos, transScale;
 
 	// Use this for initialization
 	void Start () {
         sP = GetComponent<SpriteRenderer>();
         rB = GetComponent<Rigidbody2D>();
         newDashPos = transform.position;
+		transScale = transform.localScale;
+
+
+		isDashable = true;
         
 	}
 	
@@ -37,11 +52,15 @@ public class GuyController : MonoBehaviour {
 
         if (h < 0)
         {
-            sP.flipX = true;
+			//sP.flipX = true;
+			transScale.x = -1;
+			transform.localScale = transScale;
             facingLeft = true;
         }
         else if (h > 0) {
-            sP.flipX = false;
+			transScale.x = 1;
+			transform.localScale = transScale;
+            //sP.flipX = false;
             facingLeft = false;
         }
 
@@ -52,7 +71,7 @@ public class GuyController : MonoBehaviour {
         }
 
 
-        if (Input.GetKeyDown(KeyCode.Space)) {
+		if (Input.GetButtonDown("Jump")) {
             if (jumpNum < maxJumpNum)
             {
                 rB.AddForce(Vector2.up * jumpStrength);
@@ -62,26 +81,26 @@ public class GuyController : MonoBehaviour {
         }
 
 
-        if (Input.GetKeyDown(KeyCode.X)) {
-            
+		if (Input.GetKeyDown(KeyCode.X))
+		{
+			if (isDashable)
+			{
+				dashStartTime = Time.time;
+				if (facingLeft == true)
+				{
+					newDashPos = new Vector3(transPos.x - dashLength, transPos.y, 0);
 
-            if (facingLeft == true)
-            {
-                //  rB.AddForce(Vector2.left * dashSpeed);
-                //transPos.x -= dashLength;
-                //transPos = Vector3.Lerp(transPos, new Vector3(0, 0, 0), dashSpeed);
-               newDashPos = new Vector3(transPos.x - dashLength, transPos.y, 0);
+				}
+				else if (facingLeft == false)
+				{
+					newDashPos = new Vector3(transPos.x + dashLength, transPos.y, 0);
 
-            }
-            else if (facingLeft == false) {
-                //rB.AddForce(Vector2.right * dashSpeed);
-                //transPos.x += dashLength;
-               newDashPos = new Vector3(transPos.x + dashLength, transPos.y, 0);
-
-            }
-            //transform.position = transPos;
-            isDashing = true;
-        }
+				}
+				//transform.position = transPos;
+				isDashing = true;
+				isDashable = false;
+			}
+		}
 	}
 
 
@@ -96,6 +115,7 @@ public class GuyController : MonoBehaviour {
 
     }
 
+
     void Dashing() {
         if (isDashing)
         {
@@ -106,6 +126,10 @@ public class GuyController : MonoBehaviour {
         if (Mathf.Abs(transform.position.x - newDashPos.x) < .5f) {
             isDashing = false;
         }
+
+		if(Time.time > dashStartTime + dashWaitTime){
+			isDashable = true;
+		}
 
 
     }
